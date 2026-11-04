@@ -1,6 +1,6 @@
 # Midea ProShop & HVAC Solution — Coverage Dashboard
 
-Published with GitHub Pages: **https://bossjebs23.github.io/midea-coverage/**
+Published with GitHub Pages: **https://innovations-project.github.io/midea-coverage/**
 
 Everything is served from the repository root, so a push to `main` is all it takes
 to update the live site — `.github/workflows/pages.yml` uploads the root folder and
