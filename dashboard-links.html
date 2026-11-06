@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Midea Dashboards</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; color: #142f57; background: #eef5fd; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: linear-gradient(145deg, #d9e9fb, #f7faff); }
+    main { width: min(760px, 100%); }
+    h1 { margin: 0 0 8px; color: #0b2d6b; }
+    p { margin: 0 0 24px; color: #52719c; }
+    nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    a { display: flex; align-items: center; gap: 14px; padding: 20px; border: 1px solid #cfe0f4; border-radius: 14px; background: white; color: #142f57; text-decoration: none; box-shadow: 0 4px 12px #0b2d6b12; transition: transform .18s, box-shadow .18s; }
+    a:hover, a:focus-visible { transform: translateY(-2px); box-shadow: 0 8px 20px #0b2d6b24; outline: 2px solid #1a5fd0; }
+    .icon { width: 44px; height: 44px; display: grid; place-items: center; flex: 0 0 44px; border-radius: 12px; color: white; background: linear-gradient(135deg, #0b2d6b, #1a63d8); }
+    svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    strong { display: block; font-size: 16px; }
+    small { display: block; margin-top: 4px; color: #52719c; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Midea Dashboards</h1>
+    <p>Choose a dashboard to open.</p>
+    <nav aria-label="Dashboard links">
+      <a href="https://innovations-project.github.io/OKR-dashboard/">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/><path d="M16 6h4v4"/></svg></span>
+        <span><strong>OKR Dashboard</strong><small>Objectives and key results</small></span>
+      </a>
+      <a href="https://innovations-project.github.io/midea-coverage/">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6 9 3l6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15m6-12v15"/></svg></span>
+        <span><strong>Midea Coverage</strong><small>ProShop and HVACSS coverage</small></span>
+      </a>
+    </nav>
+  </main>
+</body>
+</html>
