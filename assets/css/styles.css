@@ -298,16 +298,15 @@ a{color:var(--blue)}
   display:grid;place-items:center;
   background:var(--blue);
   color:#fff;
-  font-size:19px;
-  font-weight:700;
 }
-.kpi:nth-child(1) .kpi-icon{background:var(--blue)}
-.kpi:nth-child(2) .kpi-icon{background:var(--blue)}
-.kpi:nth-child(3) .kpi-icon{background:var(--green)}
-.kpi:nth-child(4) .kpi-icon{background:var(--purple)}
-.kpi:nth-child(5) .kpi-icon{background:#0f9ba8}
+.kpi-icon svg{width:23px;height:23px;display:block}
+.kpi:nth-child(1) .kpi-icon{background:#1f6fe0}
+.kpi:nth-child(2) .kpi-icon{background:#1f6fe0}
+.kpi:nth-child(3) .kpi-icon{background:#16a34a}
+.kpi:nth-child(4) .kpi-icon{background:#f2a20c}
+.kpi:nth-child(5) .kpi-icon{background:#7c3aed}
 .kpi.is-highlight{background:#fff9e9;border-color:#f5d58b}
-.kpi.is-highlight .kpi-icon{background:var(--amber)}
+.kpi.is-highlight .kpi-icon{background:#ea7a1b}
 .kpi-label{font-size:11.5px;color:#536a82;font-weight:600}
 .kpi-value{font-size:24px;font-weight:780;line-height:1.15;margin-top:2px}
 .kpi-sub{font-size:10.5px;color:#8597ab;margin-top:3px}

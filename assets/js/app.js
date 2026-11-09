@@ -350,20 +350,37 @@
    * ------------------------------------------------------------------ */
   var el = {};
 
+  /* Flat line icons for the KPI badges: storefront for site counts, map pin for
+     geography, spark for the newest-year card. */
+  var KPI_ICONS = {
+    shop: '<path d="M4 10v9.5h16V10"/>' +
+      '<path d="M2.9 10 4.7 4.6h14.6L21.1 10a2.6 2.6 0 0 1-4.6 1.5 2.6 2.6 0 0 1-4.5 0 2.6 2.6 0 0 1-4.5 0A2.6 2.6 0 0 1 2.9 10z"/>' +
+      '<path d="M9.6 19.5V15h4.8v4.5"/>',
+    pin: '<path d="M12 21c4.2-4.1 6.6-7.4 6.6-10.4a6.6 6.6 0 1 0-13.2 0C5.4 13.6 7.8 16.9 12 21z"/>' +
+      '<circle cx="12" cy="10.4" r="2.4"/>',
+    spark: '<path d="M12 3.6v5M12 15.4v5M3.6 12h5M15.4 12h5"/>' +
+      '<path d="M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3"/>'
+  };
+
+  function kpiIcon(name) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" ' +
+      'stroke-linecap="round" stroke-linejoin="round">' + (KPI_ICONS[name] || KPI_ICONS.shop) + '</svg>';
+  }
+
   function renderKpis(shops) {
     var s = stats(shops);
     var geoCount = (GEO.provinces || []).length || 81;
     var cards = [
-      { label: 'Total locations', value: num(s.total), sub: 'ProShop + HVAC Solution sites', icon: '⌂' },
-      { label: CFG.labels && CFG.labels.proShop || 'ProShop', value: num(s.pro), sub: pct(s.pro, s.total) + ' of the network', icon: '▤' },
-      { label: 'HVACSS', value: num(s.hvac), sub: pct(s.hvac, s.total) + ' of the network', icon: '❄' },
-      { label: 'Provinces', value: num(s.provinces), sub: 'of ' + geoCount + ' on the map', icon: '▦' },
-      { label: 'Regions', value: num(s.regions), sub: 'with an active site', icon: '◍' },
-      { label: 'New shops · ' + (s.latestYear || '—'), value: num(s.newInLatest), sub: 'latest year opened', icon: '＋', highlight: true }
+      { label: 'Total locations', value: num(s.total), sub: 'ProShop + HVAC Solution sites', icon: 'shop' },
+      { label: CFG.labels && CFG.labels.proShop || 'ProShop', value: num(s.pro), sub: pct(s.pro, s.total) + ' of the network', icon: 'shop' },
+      { label: 'HVACSS', value: num(s.hvac), sub: pct(s.hvac, s.total) + ' of the network', icon: 'shop' },
+      { label: 'Provinces', value: num(s.provinces), sub: 'of ' + geoCount + ' on the map', icon: 'pin' },
+      { label: 'Regions', value: num(s.regions), sub: 'with an active site', icon: 'pin' },
+      { label: 'New shops · ' + (s.latestYear || '—'), value: num(s.newInLatest), sub: 'latest year opened', icon: 'spark', highlight: true }
     ];
     el.kpis.innerHTML = cards.map(function (c) {
       return '<article class="kpi' + (c.highlight ? ' is-highlight' : '') + '">' +
-        '<div class="kpi-icon" aria-hidden="true">' + c.icon + '</div>' +
+        '<div class="kpi-icon" aria-hidden="true">' + kpiIcon(c.icon) + '</div>' +
         '<div><div class="kpi-label">' + esc(c.label) + '</div>' +
         '<div class="kpi-value">' + esc(c.value) + '</div>' +
         '<div class="kpi-sub">' + esc(c.sub) + '</div></div></article>';
