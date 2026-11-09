@@ -1197,7 +1197,7 @@
       'shopSearch', 'shopType', 'shopRegion', 'shopSort', 'shopRows', 'shopPager', 'shopCount',
       'masterSearch', 'masterLevel', 'masterSort', 'masterRows', 'masterPager', 'masterCount', 'masterSub',
       'restoreData', 'reportBody', 'printReport', 'exportDataset',
-      'importExcel', 'excelFile', 'exportShops', 'exportMaster',
+      'importExcel', 'excelFile',
       'toast', 'detailModal', 'detailBody', 'detailClose'
     ].forEach(function (key) {
       var node = key === 'map' ? $('#provinceMap')
@@ -1321,8 +1321,6 @@
       handleFile(this.files && this.files[0]);
       this.value = '';
     });
-    el.exportShops.addEventListener('click', exportShops);
-    el.exportMaster.addEventListener('click', exportMaster);
     el.exportDataset.addEventListener('click', exportDataset);
     el.restoreData.addEventListener('click', restoreOriginal);
     el.printReport.addEventListener('click', function () { window.print(); });
