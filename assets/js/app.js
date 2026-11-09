@@ -243,7 +243,7 @@
     provinceSort: { key: 'total', dir: 'desc' },
     provinceQuery: '',
     shop: { q: '', type: '', region: '', sort: 'name|asc' },
-    master: { q: '', level: '', sort: 'id|asc' },
+    master: { q: '', level: '', year: '', code: '', sort: 'id|asc' },
     page: { shop: 1, master: 1 }
   };
 
@@ -638,6 +638,10 @@
     var levels = uniqueOptions(state.records.map(function (r) { return r.level; }))
       .sort(function (a, b) { return a.value.localeCompare(b.value, 'en'); });
     fillSelect(el.masterLevel, levels, state.master.level, 'All levels');
+
+    var masterYears = uniqueOptions(state.records.map(function (r) { return r.year ? String(r.year) : ''; }))
+      .sort(function (a, b) { return Number(a.value) - Number(b.value); });
+    fillSelect(el.masterYear, masterYears, state.master.year, 'All years');
   }
 
   function setFilter(key, value) {
@@ -727,8 +731,11 @@
    * ------------------------------------------------------------------ */
   function renderMaster() {
     var q = state.master.q.toLowerCase();
+    var code = state.master.code.toLowerCase();
     var rows = state.records.filter(function (r) {
       if (state.master.level && r.level !== state.master.level) return false;
+      if (state.master.year && String(r.year) !== String(state.master.year)) return false;
+      if (code && String(r.code || '').toLowerCase().indexOf(code) === -1) return false;
       if (!q) return true;
       return (r.id + ' ' + r.name + ' ' + r.code + ' ' + r.city + ' ' + r.province + ' ' + r.address + ' ' + r.level)
         .toLowerCase().indexOf(q) !== -1;
@@ -757,7 +764,7 @@
         '<td>' + esc(r.category || '—') + '</td>' +
         '<td class="num">' + (r.year || '—') + '</td>' +
         '<td>' + statusTag(r.status) + '</td></tr>';
-    }).join('') : '<tr><td colspan="10"><div class="empty"><b>No records match</b>Try a different search.</div></td></tr>';
+    }).join('') : '<tr><td colspan="10"><div class="empty"><b>No records match</b>Try a different search or filter.</div></td></tr>';
 
     el.masterPager.innerHTML = pagerHtml('master', state.page.master, pages, start + 1, Math.min(start + size, rows.length), rows.length);
   }
@@ -1152,8 +1159,8 @@
     state.page.master = 1;
     state.filters = { region: '', province: '', type: '', year: '', q: '' };
     state.shop = { q: '', type: '', region: '', sort: 'name|asc' };
-    state.master = { q: '', level: '', sort: 'id|asc' };
-    ['fRegion', 'fProvince', 'fType', 'fYear', 'fSearch', 'shopSearch', 'shopType', 'shopRegion', 'masterSearch', 'masterLevel']
+    state.master = { q: '', level: '', year: '', code: '', sort: 'id|asc' };
+    ['fRegion', 'fProvince', 'fType', 'fYear', 'fSearch', 'shopSearch', 'shopType', 'shopRegion', 'masterSearch', 'masterLevel', 'masterYear', 'masterCode']
       .forEach(function (id) { if (el[id]) el[id].value = ''; });
 
     refreshFilterOptions();
@@ -1344,7 +1351,7 @@
       'shopSummaryRows', 'shopSummarySub', 'shopSummaryFoot',
       'fRegion', 'fProvince', 'fType', 'fYear', 'fSearch', 'clearFilters', 'refresh',
       'shopSearch', 'shopType', 'shopRegion', 'shopSort', 'shopRows', 'shopPager', 'shopCount',
-      'masterSearch', 'masterLevel', 'masterSort', 'masterRows', 'masterPager', 'masterCount', 'masterSub',
+      'masterSearch', 'masterLevel', 'masterYear', 'masterCode', 'masterSort', 'masterRows', 'masterPager', 'masterCount', 'masterSub',
       'restoreData', 'reportBody', 'printReport', 'exportDataset',
       'importExcel', 'excelFile',
       'toast', 'detailModal', 'detailBody', 'detailClose'
@@ -1460,6 +1467,14 @@
     el.masterLevel.addEventListener('change', function () {
       state.master.level = this.value; state.page.master = 1; renderMaster();
     });
+    el.masterYear.addEventListener('change', function () {
+      state.master.year = this.value; state.page.master = 1; renderMaster();
+    });
+    el.masterCode.addEventListener('input', debounce(function () {
+      state.master.code = el.masterCode.value.trim();
+      state.page.master = 1;
+      renderMaster();
+    }, 150));
     el.masterSort.addEventListener('change', function () {
       state.master.sort = this.value; state.page.master = 1; renderMaster();
     });
