@@ -831,6 +831,19 @@
       byStatus[key] = (byStatus[key] || 0) + 1;
     });
 
+    /* map legend: every province on the map, shaded exactly as the dashboard does */
+    var mapKeys = (GEO.provinces || []).map(function (p) { return p.key; });
+    var mapCounts = {};
+    provinces.forEach(function (r) { mapCounts[r.province] = r.total; });
+    var mapLegend = MAP_BUCKETS.map(function (b) {
+      return {
+        label: b.label,
+        fill: b.fill,
+        count: mapKeys.filter(function (key) { return b.test(mapCounts[key] || 0); }).length
+      };
+    });
+    var shaded = mapKeys.filter(function (key) { return (mapCounts[key] || 0) > 0; }).length;
+
     el.reportBody.innerHTML =
       '<h2>Midea ProShop and HVAC Solution Shop Monitoring System</h2>' +
       '<div class="report-meta">Coverage report · generated ' +
@@ -851,6 +864,22 @@
         return '<div class="report-kpi"><span>' + esc(c[0]) + '</span><b>' + esc(c[1]) + '</b>' +
           '<small>' + esc(c[2]) + '</small></div>';
       }).join('') + '</div>' +
+
+      '<h3>Coverage map</h3>' +
+      '<p class="report-sub">' + esc(num(shaded) + ' of ' + num(mapKeys.length)) + ' provinces have at least one site in this selection; the rest stay pale. The selected province keeps its outline.</p>' +
+      '<div class="report-map-wrap"><div class="report-map"></div>' +
+      '<div class="report-map-side">' +
+      '<table class="report-table"><thead><tr><th>Sites per province</th><th class="num">Provinces</th></tr></thead><tbody>' +
+      mapLegend.map(function (b) {
+        return '<tr><td><span class="report-swatch" style="background:' + b.fill + '"></span>' + esc(b.label) + '</td>' +
+          '<td class="num">' + num(b.count) + '</td></tr>';
+      }).join('') +
+      '</tbody></table>' +
+      '<table class="report-table" style="margin-top:12px"><thead><tr><th>Busiest provinces</th><th class="num">Sites</th></tr></thead><tbody>' +
+      (provinces.length ? provinces.slice(0, 6).map(function (r) {
+        return '<tr><td>' + esc(r.name) + '</td><td class="num"><b>' + num(r.total) + '</b></td></tr>';
+      }).join('') : '<tr><td colspan="2">No provinces in this selection.</td></tr>') +
+      '</tbody></table></div></div>' +
 
       '<h3>Coverage by region</h3>' +
       '<p class="report-sub">ProShop and HVACSS sites per region, with each region’s share of the selection.</p>' +
@@ -910,6 +939,23 @@
       'Provinces covered: ' + num(s.provinces) + ' of ' + num(geoCount) +
       '. Figures reflect the workbook at load time. Individual shop names and addresses are left out of this report — ' +
       'open the dashboard’s Shop list summary, or the Shop list view, for that detail.</div>';
+
+    /* clone the dashboard choropleth so the printout carries the same shading */
+    var reportMap = el.reportBody.querySelector('.report-map');
+    if (reportMap && el.map) {
+      var mapClone = el.map.cloneNode(true);
+      mapClone.removeAttribute('id');
+      mapClone.setAttribute('class', 'province-map report-map-svg');
+      mapClone.setAttribute('aria-hidden', 'true');
+      mapClone.setAttribute('focusable', 'false');
+      $$('.province', mapClone).forEach(function (p) {
+        p.classList.remove('is-dim');
+        p.removeAttribute('tabindex');
+        p.removeAttribute('role');
+        p.removeAttribute('aria-label');
+      });
+      reportMap.appendChild(mapClone);
+    }
   }
 
   /* ------------------------------------------------------------------ *
