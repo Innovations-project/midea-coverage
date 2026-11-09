@@ -787,71 +787,129 @@
    * 8. report
    * ------------------------------------------------------------------ */
   function renderReport() {
-    var s = stats(state.shops);
-    var provinces = sortBy(provinceRows(state.shops), 'total', 'desc');
-    var regions = regionRows(state.shops);
+    /* The report mirrors the dashboard for the current selection: same KPIs,
+       coverage strip, region split, full province summary, year and status
+       breakdowns. Individual shop names and addresses stay out of it. */
+    var shops = filteredShops();
+    var s = stats(shops);
+    var geoCount = (GEO.provinces || []).length || 81;
+    var regionCount = Object.keys(REGIONS).length;
+    var provinces = sortBy(provinceRows(shops), 'total', 'desc');
+    var regions = regionRows(shops);
     var years = Object.keys(s.byYear).sort();
     var meta = RAW_DATA.meta || {};
+
+    var f = state.filters;
+    var scope = [];
+    if (f.region) scope.push('Region ' + f.region);
+    if (f.province) scope.push(titleCase(f.province));
+    if (f.type) scope.push(f.type);
+    if (f.year) scope.push('opened ' + f.year);
+    if (f.q) scope.push('search “' + f.q + '”');
+    var scopeText = (scope.length ? scope.join(' · ') : 'All provinces') +
+      ' · ' + num(shops.length) + ' of ' + num(state.shops.length) + ' locations';
+
+    var kpis = [
+      ['Total locations', num(s.total), 'ProShop + HVAC Solution sites', false],
+      [CFG.labels && CFG.labels.proShop || 'ProShop', num(s.pro), pct(s.pro, s.total) + ' of the network', false],
+      ['HVACSS', num(s.hvac), pct(s.hvac, s.total) + ' of the network', false],
+      ['Provinces', num(s.provinces), 'of ' + geoCount + ' on the map', false],
+      ['Regions', num(s.regions), 'with an active site', false],
+      ['New shops · ' + (s.latestYear || '—'), num(s.newInLatest), 'latest year opened', true]
+    ];
+
+    var coverage = [
+      ['Provinces covered', num(s.provinces), 'of ' + geoCount],
+      ['Cities covered', num(s.cities), ''],
+      ['Regions covered', num(s.regions), 'of ' + regionCount],
+      ['Activated', num(s.activated), 'of ' + num(s.total)]
+    ];
+
+    var byStatus = {};
+    shops.forEach(function (shop) {
+      var key = shop.status || 'Not stated';
+      byStatus[key] = (byStatus[key] || 0) + 1;
+    });
 
     el.reportBody.innerHTML =
       '<h2>Midea ProShop and HVAC Solution Shop Monitoring System</h2>' +
       '<div class="report-meta">Coverage report · generated ' +
       esc(new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })) +
       ' · source: ' + esc(meta.source || 'master workbook') + '</div>' +
+      '<div class="report-meta">Scope: ' + esc(scopeText) + '</div>' +
 
       '<div class="report-kpis">' +
-      [['Locations', s.total], ['ProShop', s.pro], ['HVACSS', s.hvac],
-        ['Provinces', s.provinces], ['Cities', s.cities], ['Regions', s.regions]]
-        .map(function (k) { return '<div class="report-kpi"><span>' + esc(k[0]) + '</span><b>' + num(k[1]) + '</b></div>'; })
-        .join('') + '</div>' +
+      kpis.map(function (k) {
+        return '<div class="report-kpi' + (k[3] ? ' is-highlight' : '') + '"><span>' + esc(k[0]) + '</span>' +
+          '<b>' + esc(k[1]) + '</b><small>' + esc(k[2]) + '</small></div>';
+      }).join('') + '</div>' +
+
+      '<h3>Coverage</h3>' +
+      '<p class="report-sub">How far the network reaches in this selection.</p>' +
+      '<div class="report-kpis coverage">' +
+      coverage.map(function (c) {
+        return '<div class="report-kpi"><span>' + esc(c[0]) + '</span><b>' + esc(c[1]) + '</b>' +
+          '<small>' + esc(c[2]) + '</small></div>';
+      }).join('') + '</div>' +
 
       '<h3>Coverage by region</h3>' +
+      '<p class="report-sub">ProShop and HVACSS sites per region, with each region’s share of the selection.</p>' +
       '<table class="report-table"><thead><tr><th>Region</th><th>Name</th>' +
-      '<th class="num">Provinces</th><th class="num">ProShop</th><th class="num">HVACSS</th><th class="num">Total</th></tr></thead><tbody>' +
-      regions.map(function (r) {
+      '<th class="num">Provinces</th><th class="num">ProShop</th><th class="num">HVACSS</th>' +
+      '<th class="num">Total</th><th class="num">Share</th></tr></thead><tbody>' +
+      (regions.length ? regions.map(function (r) {
         return '<tr><td><b>' + esc(r.region) + '</b></td><td>' + esc(REGIONS[r.region] || '—') + '</td>' +
-          '<td class="num">' + r.provinces + '</td><td class="num">' + r.ps + '</td>' +
-          '<td class="num">' + r.hs + '</td><td class="num"><b>' + r.total + '</b></td></tr>';
-      }).join('') +
+          '<td class="num">' + r.provinces + '</td><td class="num">' + num(r.ps) + '</td>' +
+          '<td class="num">' + num(r.hs) + '</td><td class="num"><b>' + num(r.total) + '</b></td>' +
+          '<td class="num">' + pct(r.total, s.total) + '</td></tr>';
+      }).join('') : '<tr><td colspan="7">No regions in this selection.</td></tr>') +
+      '</tbody></table>' +
+
+      '<h3>Province summary</h3>' +
+      '<p class="report-sub">Every province in the selection, sorted by number of sites.</p>' +
+      '<table class="report-table"><thead><tr><th>Province</th><th>Region</th>' +
+      '<th class="num">ProShop</th><th class="num">HVACSS</th><th class="num">Total</th>' +
+      '<th class="num">Cities</th><th class="num">Latest year</th></tr></thead><tbody>' +
+      (provinces.length ? provinces.map(function (r) {
+        return '<tr><td><b>' + esc(r.name) + '</b></td><td>' + esc(r.region || '—') + '</td>' +
+          '<td class="num">' + num(r.ps) + '</td><td class="num">' + num(r.hs) + '</td>' +
+          '<td class="num"><b>' + num(r.total) + '</b></td>' +
+          '<td class="num">' + num(r.cities) + '</td><td class="num">' + (r.newest || '—') + '</td></tr>';
+      }).join('') : '<tr><td colspan="7">No provinces in this selection.</td></tr>') +
       '</tbody></table>' +
 
       '<div class="report-cols" style="margin-top:22px">' +
-      '<div><h3 style="margin-top:0">Top provinces</h3><table class="report-table"><thead><tr>' +
-      '<th>Province</th><th>Region</th><th class="num">ProShop</th><th class="num">HVACSS</th><th class="num">Total</th>' +
-      '</tr></thead><tbody>' +
-      provinces.slice(0, 15).map(function (r) {
-        return '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.region || '—') + '</td>' +
-          '<td class="num">' + r.ps + '</td><td class="num">' + r.hs + '</td>' +
-          '<td class="num"><b>' + r.total + '</b></td></tr>';
-      }).join('') +
-      '</tbody></table></div>' +
-
       '<div><h3 style="margin-top:0">Sites by year opened</h3><table class="report-table"><thead><tr>' +
       '<th>Year</th><th class="num">Sites</th><th class="num">Share</th></tr></thead><tbody>' +
-      years.map(function (y) {
+      (years.length ? years.map(function (y) {
         return '<tr><td>' + esc(y) + '</td><td class="num">' + num(s.byYear[y]) + '</td>' +
           '<td class="num">' + pct(s.byYear[y], s.total) + '</td></tr>';
+      }).join('') : '<tr><td colspan="3">No opening years recorded.</td></tr>') +
+      '</tbody></table></div>' +
+
+      '<div><h3 style="margin-top:0">Status</h3><table class="report-table"><thead><tr>' +
+      '<th>Status</th><th class="num">Sites</th><th class="num">Share</th></tr></thead><tbody>' +
+      Object.keys(byStatus).sort().map(function (key) {
+        return '<tr><td>' + esc(key) + '</td><td class="num"><b>' + num(byStatus[key]) + '</b></td>' +
+          '<td class="num">' + pct(byStatus[key], s.total) + '</td></tr>';
       }).join('') +
       '</tbody></table>' +
-      '<h3>Status</h3><table class="report-table"><tbody>' +
-      (function () {
-        var byStatus = {};
-        state.shops.forEach(function (shop) {
-          var key = shop.status || 'Not stated';
-          byStatus[key] = (byStatus[key] || 0) + 1;
-        });
-        return Object.keys(byStatus).sort().map(function (key) {
-          return '<tr><td>' + esc(key) + '</td><td class="num"><b>' + num(byStatus[key]) + '</b></td></tr>';
-        }).join('');
-      })() +
+      '<h3>Shop list summary</h3><table class="report-table"><thead><tr>' +
+      '<th>Measure</th><th class="num">Value</th></tr></thead><tbody>' +
+      '<tr><td>Shops in this selection</td><td class="num"><b>' + num(s.total) + '</b></td></tr>' +
+      '<tr><td>ProShop</td><td class="num">' + num(s.pro) + '</td></tr>' +
+      '<tr><td>HVACSS</td><td class="num">' + num(s.hvac) + '</td></tr>' +
+      '<tr><td>Provinces represented</td><td class="num">' + num(s.provinces) + '</td></tr>' +
+      '<tr><td>Cities represented</td><td class="num">' + num(s.cities) + '</td></tr>' +
       '</tbody></table></div></div>' +
 
       '<div class="report-note">Prepared from ' + num(state.records.length) + ' master records; ' +
       num(state.shops.length) + ' of them are ProShop or HVAC Solution sites, the remaining ' +
       num(state.otherCount) + ' are other dealer levels. ' +
       (state.typoCount ? num(state.typoCount) + ' record(s) had a province name corrected while loading. ' : '') +
-      'Provinces covered: ' + num(s.provinces) + ' of ' + num((GEO.provinces || []).length) +
-      '. Figures reflect the workbook at load time.</div>';
+      'Provinces covered: ' + num(s.provinces) + ' of ' + num(geoCount) +
+      '. Figures reflect the workbook at load time. Individual shop names and addresses are left out of this report — ' +
+      'open the dashboard’s Shop list summary, or the Shop list view, for that detail.</div>';
   }
 
   /* ------------------------------------------------------------------ *
