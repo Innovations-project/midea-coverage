@@ -101,6 +101,22 @@ a{color:var(--blue)}
 }
 .nav button:hover{background:var(--navy-soft);color:#fff}
 .nav button.is-active{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(25,118,237,.35)}
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  width:100%;
+  padding:11px 13px;
+  border-radius:10px;
+  color:#c3d1e2;
+  font-weight:650;
+  font-size:13.5px;
+  text-decoration:none;
+  transition:background .14s ease,color .14s ease;
+}
+.nav a:hover{background:var(--navy-soft);color:#fff}
+.nav .ext{margin-left:auto;display:grid;place-items:center;width:14px;height:14px;opacity:.6}
+.nav .ext svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .nav .ico{display:grid;place-items:center;width:18px;height:18px;flex:none}
 .nav .ico svg{
   width:18px;height:18px;fill:none;
@@ -736,7 +752,7 @@ footer{color:#8092a5;font-size:11px;margin-top:18px}
   .brand small{display:none}
   .aside-note{display:none}
   .nav{display:flex;overflow:auto;gap:6px;padding-bottom:2px}
-  .nav button{width:auto;white-space:nowrap;padding:9px 12px}
+  .nav button,.nav a{width:auto;white-space:nowrap;padding:9px 12px}
   .topbar{padding:16px;flex-direction:column;gap:12px}
   .header-tools{align-items:flex-start;width:100%;margin-left:0}
   .account-row{align-self:flex-end}
