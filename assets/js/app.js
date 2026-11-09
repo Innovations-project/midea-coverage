@@ -498,6 +498,32 @@
     el.dataNote.innerHTML = notes.join(' ');
   }
 
+  /* Every site in the current selection — the dashboard filters and a province
+     clicked on the map both flow through the same filtered shop list. */
+  function renderShopSummary(shops) {
+    var rows = shops.slice().sort(function (a, b) {
+      return String(a.name).localeCompare(String(b.name));
+    });
+    el.shopSummaryRows.innerHTML = rows.length ? rows.map(function (s) {
+      return '<tr class="is-clickable" data-record="' + esc(s.id) + '" tabindex="0">' +
+        '<td class="name">' + esc(s.name) + '</td>' +
+        '<td>' + typeTag(s.level) + '</td>' +
+        '<td class="wrap">' + esc(s.address || '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="3"><div class="empty"><b>No shops in this selection</b>Clear the filters or click another province on the map.</div></td></tr>';
+
+    var f = state.filters;
+    var scope = f.province ? titleCase(f.province) : (f.region || 'all provinces');
+    var parts = [num(rows.length) + ' shop' + (rows.length === 1 ? '' : 's')];
+    if (f.type) parts.push(f.type);
+    parts.push(scope);
+    if (f.year) parts.push('opened ' + f.year);
+    if (f.q) parts.push('“' + f.q + '”');
+    el.shopSummarySub.textContent = parts.join(' · ');
+
+    el.shopSummaryFoot.innerHTML = '<span>Follows the filters above and the province you click on the map</span>' +
+      '<span>Click a shop for its full record</span>';
+  }
+
   function renderProvinceTable(shops) {
     var rows = sortBy(provinceRows(shops), state.provinceSort.key, state.provinceSort.dir);
     if (state.provinceQuery) {
@@ -529,6 +555,7 @@
     renderMap(shops);
     renderBars(shops);
     renderCoverage(shops);
+    renderShopSummary(shops);
     renderProvinceTable(shops);
     renderStatusLine(shops);
   }
@@ -1193,6 +1220,7 @@
       'kpis', 'map', 'mapTip', 'mapLegend', 'mapSelection', 'mapTop', 'mapSummary',
       'mapReadyLabel', 'regionBars', 'coverageGrid', 'dataNote',
       'provinceRows', 'provinceSummarySub', 'provinceFoot', 'provinceFilter',
+      'shopSummaryRows', 'shopSummarySub', 'shopSummaryFoot',
       'fRegion', 'fProvince', 'fType', 'fYear', 'fSearch', 'clearFilters', 'refresh',
       'shopSearch', 'shopType', 'shopRegion', 'shopSort', 'shopRows', 'shopPager', 'shopCount',
       'masterSearch', 'masterLevel', 'masterSort', 'masterRows', 'masterPager', 'masterCount', 'masterSub',

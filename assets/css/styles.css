@@ -486,6 +486,7 @@ a{color:var(--blue)}
 
 .table-scroll{overflow:auto;max-height:58vh}
 .table-scroll.tall{max-height:64vh}
+.table-scroll.shop-summary{max-height:min(46vh,420px)}
 .data-table{
   width:100%;
   border-collapse:separate;
